@@ -14,11 +14,17 @@ func main() {
 	})
 
 	app.Get("/private", func(c *fiber.Ctx) error {
-		return nil
+		return c.JSON(fiber.Map{
+			"success": true,
+			"path":    "private",
+		})
 	})
 
-	app.Get("/publib", func(c *fiber.Ctx) error {
-		return nil
+	app.Get("/public", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"success": true,
+			"path":    "public",
+		})
 	})
 
 	if err := app.Listen(":3000"); err != nil {
