@@ -2,10 +2,39 @@ package main
 
 import "github.com/gofiber/fiber/v2"
 
+type SignupRequest struct {
+	Name     string
+	Email    string
+	Password string
+}
+
+func ValidSignupRequest(c *fiber.Ctx, req *SignupRequest) bool {
+	if err := c.BodyParser(req); err == nil {
+
+		if req.Name == "" || req.Email == "" || req.Password == "" {
+			return false
+		}
+
+		return true
+	}
+	return false
+}
+
 func main() {
 	app := fiber.New()
 
 	app.Post("/signup", func(c *fiber.Ctx) error {
+		req := new(SignupRequest)
+
+		// Validate Request
+		if err := ValidSignupRequest(c, req); !err {
+			c.JSON(fiber.Map{
+				"success": false,
+				"message": "Invalid request",
+			})
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+
 		return nil
 	})
 
