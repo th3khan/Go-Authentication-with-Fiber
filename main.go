@@ -1,6 +1,9 @@
 package main
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+	"github.com/th3khan/Go-Authentication-with-Fiber/database"
+)
 
 type SignupRequest struct {
 	Name     string
@@ -22,6 +25,11 @@ func ValidSignupRequest(c *fiber.Ctx, req *SignupRequest) bool {
 
 func main() {
 	app := fiber.New()
+
+	_, err := database.CreateDBEngine()
+	if err != nil {
+		panic(err)
+	}
 
 	app.Post("/signup", func(c *fiber.Ctx) error {
 		req := new(SignupRequest)

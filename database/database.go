@@ -3,6 +3,8 @@ package database
 import (
 	"fmt"
 
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/th3khan/Go-Authentication-with-Fiber/database/models"
 	"xorm.io/xorm"
 )
 
@@ -13,6 +15,10 @@ func CreateDBEngine() (*xorm.Engine, error) {
 	}
 
 	if err = engine.Ping(); err != nil {
+		return nil, err
+	}
+
+	if err := engine.Sync2(new(models.User)); err != nil {
 		return nil, err
 	}
 
