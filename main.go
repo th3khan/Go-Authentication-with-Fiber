@@ -1,8 +1,12 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/th3khan/Go-Authentication-with-Fiber/database"
+	"github.com/th3khan/Go-Authentication-with-Fiber/database/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type SignupRequest struct {
@@ -26,7 +30,7 @@ func ValidSignupRequest(c *fiber.Ctx, req *SignupRequest) bool {
 func main() {
 	app := fiber.New()
 
-	_, err := database.CreateDBEngine()
+	engine, err := database.CreateDBEngine()
 	if err != nil {
 		panic(err)
 	}
@@ -42,6 +46,26 @@ func main() {
 			})
 			return c.SendStatus(fiber.StatusBadRequest)
 		}
+
+		hashPass, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.MaxCost)
+		if err != nil {
+			fmt.Println(err)
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+
+		user := &models.User{
+			Name:     req.Name,
+			Email:    req.Email,
+			Password: string(hashPass),
+		}
+
+		// Insert user into database
+		if _, err := engine.Insert(user); err != nil {
+			fmt.Println(err)
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+
+		// Create Token
 
 		return nil
 	})
