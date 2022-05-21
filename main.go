@@ -47,7 +47,7 @@ func main() {
 			return c.SendStatus(fiber.StatusBadRequest)
 		}
 
-		hashPass, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.MaxCost)
+		hashPass, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 		if err != nil {
 			fmt.Println(err)
 			return c.SendStatus(fiber.StatusInternalServerError)
@@ -66,8 +66,12 @@ func main() {
 		}
 
 		// Create Token
-
-		return nil
+		c.JSON(fiber.Map{
+			"success": true,
+			"message": "User created successfully",
+			"token":   "",
+		})
+		return c.SendStatus(fiber.StatusCreated)
 	})
 
 	app.Post("/login", func(c *fiber.Ctx) error {
