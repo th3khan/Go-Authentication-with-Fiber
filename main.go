@@ -17,10 +17,27 @@ type SignupRequest struct {
 	Password string
 }
 
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 func ValidSignupRequest(c *fiber.Ctx, req *SignupRequest) bool {
 	if err := c.BodyParser(req); err == nil {
 
 		if req.Name == "" || req.Email == "" || req.Password == "" {
+			return false
+		}
+
+		return true
+	}
+	return false
+}
+
+func ValidLoginRequest(c *fiber.Ctx, req *LoginRequest) bool {
+	if err := c.BodyParser(req); err == nil {
+
+		if req.Email == "" || req.Password == "" {
 			return false
 		}
 
@@ -85,7 +102,41 @@ func main() {
 	})
 
 	app.Post("/login", func(c *fiber.Ctx) error {
-		return nil
+		req := new(LoginRequest)
+
+		// Validate Request
+		if err := ValidLoginRequest(c, req); !err {
+			c.JSON(fiber.Map{
+				"success": false,
+				"message": "Invalid credentials",
+			})
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+
+		user := new(models.User)
+		has, err := engine.Where("email = ?", req.Email).Desc("id").Get(user)
+
+		if err != nil || !has {
+			c.JSON(fiber.Map{
+				"success": false,
+				"message": "Invalid credentials",
+			})
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+
+		token, exp, err := createJwtToken(*user)
+		if err != nil {
+			fmt.Println(err)
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+		c.JSON(fiber.Map{
+			"success": true,
+			"message": "Login Successfully",
+			"token":   token,
+			"exp":     exp,
+			"user":    user,
+		})
+		return c.SendStatus(fiber.StatusCreated)
 	})
 
 	app.Get("/private", func(c *fiber.Ctx) error {
