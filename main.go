@@ -124,6 +124,14 @@ func main() {
 			return c.SendStatus(fiber.StatusBadRequest)
 		}
 
+		if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+			c.JSON(fiber.Map{
+				"success": false,
+				"message": "Invalid credentials",
+			})
+			return c.SendStatus(fiber.StatusBadRequest)
+		}
+
 		token, exp, err := createJwtToken(*user)
 		if err != nil {
 			fmt.Println(err)
