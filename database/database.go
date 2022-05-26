@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	_ "github.com/mattn/go-sqlite3"
-	"github.com/th3khan/Go-Authentication-with-Fiber/database/models"
+	"github.com/th3khan/Go-Authentication-with-Fiber/models"
 	"xorm.io/xorm"
 )
 

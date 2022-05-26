@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/th3khan/Go-Authentication-with-Fiber/database"
-	"github.com/th3khan/Go-Authentication-with-Fiber/database/models"
+	"github.com/th3khan/Go-Authentication-with-Fiber/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -66,10 +68,17 @@ func main() {
 		}
 
 		// Create Token
+		token, exp, err := createJwtToken(*user)
+		if err != nil {
+			fmt.Println(err)
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+
 		c.JSON(fiber.Map{
 			"success": true,
 			"message": "User created successfully",
-			"token":   "",
+			"token":   token,
+			"exp":     exp,
 		})
 		return c.SendStatus(fiber.StatusCreated)
 	})
@@ -95,4 +104,15 @@ func main() {
 	if err := app.Listen(":3000"); err != nil {
 		panic(err)
 	}
+}
+
+func createJwtToken(user models.User) (string, int64, error) {
+	exp := time.Now().Add(time.Minute * 5).Unix()
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["user_id"] = user.Id
+	claims["exp"] = exp
+	t, err := token.SignedString([]byte("secret_token"))
+
+	return t, exp, err
 }
