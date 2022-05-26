@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	jwtware "github.com/gofiber/jwt/v3"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/th3khan/Go-Authentication-with-Fiber/database"
 	"github.com/th3khan/Go-Authentication-with-Fiber/models"
@@ -147,14 +148,20 @@ func main() {
 		return c.SendStatus(fiber.StatusCreated)
 	})
 
-	app.Get("/private", func(c *fiber.Ctx) error {
+	private := app.Group("/private")
+	// JWT Middleware
+	private.Use(jwtware.New(jwtware.Config{
+		SigningKey: []byte("secret_token"),
+	}))
+	private.Get("/", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"success": true,
 			"path":    "private",
 		})
 	})
 
-	app.Get("/public", func(c *fiber.Ctx) error {
+	public := app.Group("/public")
+	public.Get("/", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"success": true,
 			"path":    "public",
