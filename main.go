@@ -79,6 +79,7 @@ func main() {
 			"message": "User created successfully",
 			"token":   token,
 			"exp":     exp,
+			"user":    user,
 		})
 		return c.SendStatus(fiber.StatusCreated)
 	})
